@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from yoloseg import YOLOSeg
 
 # 初始化全局变量
@@ -25,7 +26,17 @@ def get_frames(pipeline):
             color_image = np.asanyarray(color_frame.get_data())
 
 # 预处理、推理、后处理的函数
-def process_frames(yoloseg):
+def process_frame(yoloseg, input_image):
+    start_time = time.time()
+    boxes, scores, class_ids, masks = yoloseg(input_image)
+    combined_img = yoloseg.draw_masks(input_image)
+    end_time = time.time()
+    inference_time = end_time - start_time
+    fps = 1 / inference_time
+    print(f" FPS : {fps:.4f} HZ")
+    return combined_img
+
+def process_frames(yoloseg, executor):
     global color_image, combined_img
     while True:
         if color_image is None:
@@ -33,14 +44,9 @@ def process_frames(yoloseg):
         with frame_lock:
             input_image = color_image.copy()
         
-        # 推理
-        start_time = time.time()
-        boxes, scores, class_ids, masks = yoloseg(input_image)
-        combined_img = yoloseg.draw_masks(input_image)
-        end_time = time.time()
-        inference_time = end_time - start_time
-        fps = 1 / inference_time
-        print(f" FPS : {fps:.4f} HZ")
+        # 使用线程池进行处理
+        future = executor.submit(process_frame, yoloseg, input_image)
+        combined_img = future.result()
         time.sleep(0.01)  # 模拟处理时间
 
 # 推流显示的函数
@@ -60,8 +66,6 @@ def display_frames():
 # 初始化深度和彩色流的配置
 pipeline = rs.pipeline()
 config = rs.config()
-#config.enable_stream(rs.stream.depth, 640, 360, rs.format.z16, 60)
-#config.enable_stream(rs.stream.color, 640, 360, rs.format.bgr8, 60)
 config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
@@ -70,9 +74,12 @@ pipeline.start(config)
 model_path = "models/yolov5s-seg.onnx"
 yoloseg = YOLOSeg(model_path, conf_thres=0.3, iou_thres=0.3)
 
+# 初始化线程池
+executor = ThreadPoolExecutor(max_workers=8)
+
 # 启动线程
 thread1 = threading.Thread(target=get_frames, args=(pipeline,))
-thread2 = threading.Thread(target=process_frames, args=(yoloseg,))
+thread2 = threading.Thread(target=process_frames, args=(yoloseg, executor))
 thread3 = threading.Thread(target=display_frames)
 
 # 设置守护线程，确保主线程退出时子线程也退出
@@ -92,3 +99,6 @@ thread3.join()
 
 # 停止管道
 pipeline.stop()
+
+# 关闭线程池
+executor.shutdown()
