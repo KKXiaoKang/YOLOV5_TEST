@@ -169,7 +169,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/realsense_yolo_segment_ros.py
-  scripts/robot_yolov_tf2_base.py
+  scripts/realsense_yolo_coordinate_3d.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

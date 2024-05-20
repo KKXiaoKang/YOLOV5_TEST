@@ -1,3 +1,47 @@
+#!/usr/bin/env python
+"""
+本脚本将YOLO目标检测与RealSense相机数据集成，以在ROS（机器人操作系统）环境中执行对象检测。
+它利用RGB和深度图像以及相机信息来检测对象，将像素坐标转换为3D坐标，并将结果作为TF（Transform）帧进行广播。
+
+主要功能：
+- 订阅RGB和深度图像话题以及相机信息话题。
+- 对RGB图像执行YOLO目标检测。
+- 使用深度信息和相机内参将像素坐标转换为3D坐标。
+- 将检测结果发布为Detection2DArray消息。
+- 为检测到的对象广播TF转换。
+
+模块：
+- rospy：ROS Python库。
+- rospkg：ROS Python包库。
+- pyrealsense2：Intel RealSense SDK的Python接口。
+- numpy：用于数值计算的库。
+- cv2：OpenCV库，用于计算机视觉任务。
+- threading：多线程处理的库。
+- time：时间相关函数。
+- concurrent.futures：并行执行的库。
+- sensor_msgs.msg：ROS传感器数据消息类型。
+- vision_msgs.msg：ROS视觉相关数据消息类型。
+- cv_bridge：用于在OpenCV和ROS图像格式之间转换的ROS库。
+- tf2_ros：处理TF转换的ROS库。
+- geometry_msgs：ROS几何数据消息类型。
+
+全局变量：
+- color_image：存储RGB图像数据。
+- depth_image：存储深度图像数据。
+- camera_info：存储相机内参。
+- frame_lock：用于访问共享数据的线程锁。
+- bridge：ROS CvBridge实例，用于图像转换。
+
+函数：
+- image_callback：用于RGB图像消息的ROS回调函数。
+- depth_callback：用于深度图像消息的ROS回调函数。
+- camera_info_callback：用于相机信息消息的ROS回调函数。
+- broadcast_tf_transforms：为检测到的对象广播TF转换。
+- convert_to_3d：使用相机内参和深度数据将像素坐标转换为3D坐标。
+- process_frame：在输入图像上执行YOLO目标检测，转换坐标，并创建Detection2DArray消息。
+- process_frames：持续处理帧，发布检测结果，并广播TF转换。
+- main：主函数，用于初始化ROS节点，设置发布者/订阅者，并启动处理线程。
+"""
 import rospy
 import rospkg
 import pyrealsense2 as rs
@@ -5,13 +49,13 @@ import numpy as np
 import cv2
 import threading
 import time
+import yaml
 from concurrent.futures import ThreadPoolExecutor
 from sensor_msgs.msg import Image, CameraInfo
 from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
 from cv_bridge import CvBridge, CvBridgeError
 import tf2_ros
 import geometry_msgs
-
 import os
 import sys
 sys.path.append(os.path.join(rospkg.RosPack().get_path('kuavo_vision_object'), 'scripts'))
@@ -23,6 +67,13 @@ depth_image = None
 camera_info = None
 frame_lock = threading.Lock()
 bridge = CvBridge()
+
+# 加载配置文件
+rospack = rospkg.RosPack()
+config_path = os.path.join(rospack.get_path('kuavo_vision_object'), 'config/yolo.yaml')
+with open(config_path, 'r') as config_file:
+    config = yaml.safe_load(config_file)
+interested_classes = config['interested_classes']
 
 # 图像回调函数
 def image_callback(msg):
@@ -95,6 +146,9 @@ def process_frame(yoloseg, input_image, depth_image, camera_info):
     detection_msg.header.frame_id = "head_camera_color_optical_frame"
 
     for box, score, class_id in zip(boxes, scores, class_ids):
+        if class_id not in interested_classes:
+            continue  # 忽略不感兴趣的类别
+
         detection = Detection2D()
         hypothesis = ObjectHypothesisWithPose()
         hypothesis.id = int(class_id)
