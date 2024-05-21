@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf2_ros
   tf2
+  tf
   tf2_geometry_msgs
   geometry_msgs
   robot_state_publisher
@@ -169,7 +170,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/realsense_yolo_segment_ros.py
-  scripts/realsense_yolo_coordinate_3d.py
+  scripts/realsense_yolo_transform_torso.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

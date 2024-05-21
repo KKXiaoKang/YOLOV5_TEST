@@ -107,7 +107,7 @@ def broadcast_tf_transforms(detection_msg, tf_broadcaster):
             transform = geometry_msgs.msg.TransformStamped()
             transform.header.stamp = rospy.Time.now()
             transform.header.frame_id = "head_camera_color_optical_frame"
-            transform.child_frame_id = f"object_{detection.results[0].id}"  # 使用检测到的对象 ID 作为子帧 ID
+            transform.child_frame_id = f"camera_object_{detection.results[0].id}"  # 使用检测到的对象 ID 作为子帧 ID
             transform.transform.translation.x = x
             transform.transform.translation.y = y
             transform.transform.translation.z = z
@@ -170,7 +170,10 @@ def process_frame(yoloseg, input_image, depth_image, camera_info):
                 detection.results[0].pose.pose.position.x = x
                 detection.results[0].pose.pose.position.y = y
                 detection.results[0].pose.pose.position.z = z
-            else:
+            else:          # 如果深度无效，则将数值全赋值为0
+                detection.results[0].pose.pose.position.x = 0
+                detection.results[0].pose.pose.position.y = 0
+                detection.results[0].pose.pose.position.z = 0
                 rospy.logwarn(f"Invalid depth at ({u}, {v}): {depth}")
         else:
             rospy.logwarn(f"Depth image is None at ({u}, {v})")
