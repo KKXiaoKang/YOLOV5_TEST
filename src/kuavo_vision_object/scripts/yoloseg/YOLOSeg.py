@@ -21,12 +21,13 @@ class YOLOSeg:
         return self.segment_objects(image)
 
     def initialize_model(self, path):
-        # self.session = onnxruntime.InferenceSession(path,
-        #                                             providers=['CUDAExecutionProvider',
-        #                                                        'CPUExecutionProvider'])
+        # GPU
+        self.session = onnxruntime.InferenceSession(path,
+                                                    providers=['CUDAExecutionProvider',
+                                                               'CPUExecutionProvider'])
 
-        # CPU
-        self.session = onnxruntime.InferenceSession(path)
+        # # CPU
+        # self.session = onnxruntime.InferenceSession(path)
         
         # Get model info
         self.get_input_details()
