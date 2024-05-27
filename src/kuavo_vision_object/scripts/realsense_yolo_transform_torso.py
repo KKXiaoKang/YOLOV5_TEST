@@ -65,9 +65,13 @@ class YoloTransform:
             pose_stamped.header = msg.header
             pose_stamped.pose = detection.results[0].pose.pose
 
-            # 使用TF变换坐标
+            # 使用TF变换坐标 -- 设置抓取位姿初始化，位置发送变换，姿态保持不变
             transformed_pose = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
-            transformed_detection.results[0].pose.pose = transformed_pose.pose
+            transformed_detection.results[0].pose.pose = transformed_pose.pose  
+            transformed_detection.results[0].pose.pose.orientation.x = 0.0
+            transformed_detection.results[0].pose.pose.orientation.y = 0.0
+            transformed_detection.results[0].pose.pose.orientation.z = 0.0
+            transformed_detection.results[0].pose.pose.orientation.w = 1.0 
 
             # 创建TransformStamped消息用于TF广播
             transform_stamped = TransformStamped()
