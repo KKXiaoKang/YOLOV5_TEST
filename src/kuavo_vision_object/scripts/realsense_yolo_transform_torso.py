@@ -77,7 +77,8 @@ class YoloTransform:
             transform_stamped.transform.translation.x = transformed_pose.pose.position.x
             transform_stamped.transform.translation.y = transformed_pose.pose.position.y
             transform_stamped.transform.translation.z = transformed_pose.pose.position.z
-            transform_stamped.transform.rotation = self.normalize_quaternion(transformed_pose.pose.orientation)
+            transform_stamped.transform.rotation.w = 1  # 单位四元数
+            # transform_stamped.transform.rotation = self.normalize_quaternion(transformed_pose.pose.orientation)
 
             # 广播转换
             self.tf_broadcaster.sendTransform(transform_stamped)

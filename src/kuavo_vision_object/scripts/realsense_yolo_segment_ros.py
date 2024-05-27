@@ -170,10 +170,21 @@ def process_frame(yoloseg, input_image, depth_image, camera_info):
                 detection.results[0].pose.pose.position.x = x
                 detection.results[0].pose.pose.position.y = y
                 detection.results[0].pose.pose.position.z = z
+
+                detection.results[0].pose.pose.orientation.x = 0.0 
+                detection.results[0].pose.pose.orientation.y = 0.0 
+                detection.results[0].pose.pose.orientation.z = 0.0 
+                detection.results[0].pose.pose.orientation.w = 1.0 
             else:          # 如果深度无效，则将数值全赋值为0
                 detection.results[0].pose.pose.position.x = 0
                 detection.results[0].pose.pose.position.y = 0
                 detection.results[0].pose.pose.position.z = 0
+
+                detection.results[0].pose.pose.orientation.x = 0.0 
+                detection.results[0].pose.pose.orientation.y = 0.0 
+                detection.results[0].pose.pose.orientation.z = 0.0 
+                detection.results[0].pose.pose.orientation.w = 1.0 
+
                 rospy.logwarn(f"Invalid depth at ({u}, {v}): {depth}")
         else:
             rospy.logwarn(f"Depth image is None at ({u}, {v})")
