@@ -3,7 +3,7 @@
     <!-- Launch realsense2_camera for head camera -->
     <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
         <arg name="camera" value="/head_camera" />
-        <arg name="serial_no" value="239722074424" /> 
+        <arg name="serial_no" value="243322071847" /> 
         <arg name="color_width"   value="1280"/>
         <arg name="color_height"  value="720"/>
         <arg name="color_fps"     value="30"/>
