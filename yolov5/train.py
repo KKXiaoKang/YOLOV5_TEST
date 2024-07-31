@@ -842,7 +842,11 @@ def run(**kwargs):
     main(opt)
     return opt
 
-
+#### --data data/文件夹 --cfg model/文件夹
+#### batch-size如果为16 GPU显卡最好有8G或者16G显存
+# python3 train.py --data data_rm.yaml --cfg yolov5s_rm.yaml --weights pretrained/yolov5s.pt --epoch 100 --batch-size 4 --device cpu
+# python3 train.py --data data_rm.yaml --cfg yolov5s_rm.yaml --weights pretrained/yolov5l.pt --epoch 100 --batch-size 4 
+# python3 train.py --data data_rm.yaml --cfg yolov5s_rm.yaml --weights pretrained/yolov5m.pt --epoch 100 --batch-size 4 
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)

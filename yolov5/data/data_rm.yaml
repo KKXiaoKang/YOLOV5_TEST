@@ -1,0 +1,21 @@
+# ../train/images 
+train: /home/kuavo/kuavo_ros_application/Robotflow_API/YOLOV5_TEST/yolov5/data/humanoid_data/train/images
+
+# ../valid/images 
+val: /home/kuavo/kuavo_ros_application/Robotflow_API/YOLOV5_TEST/yolov5/data/humanoid_data/valid/images
+
+# ../test/images 
+test: /home/kuavo/kuavo_ros_application/Robotflow_API/YOLOV5_TEST/yolov5/data/humanoid_data/test/images
+
+# number of classes
+nc: 3
+
+# class name 
+names: ['-', '4', 'Valve']
+
+roboflow:
+  workspace: abyssal-spires
+  project: valves-2.0
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/abyssal-spires/valves-2.0/dataset/4
